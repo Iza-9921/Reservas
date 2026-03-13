@@ -7,8 +7,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -65,7 +67,7 @@ fun DashboardScreen(userName: String = "") {
                 contentColor = Color(0xFF4E7044)
             ) {
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Place, contentDescription = null) },
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
                     selected = false,
                     onClick = {}
                 )
@@ -75,7 +77,7 @@ fun DashboardScreen(userName: String = "") {
                     onClick = {}
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
                     selected = false,
                     onClick = {}
                 )
