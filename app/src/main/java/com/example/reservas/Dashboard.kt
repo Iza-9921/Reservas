@@ -31,11 +31,11 @@ data class Cancha(
 @Composable
 fun DashboardScreen(userName: String = "") {
     val canchas = listOf(
-        Cancha("Cancha de football 7", R.drawable.utez),
-        Cancha("Cancha de Basquetbol", R.drawable.utez),
+        Cancha("Cancha de Football 7", R.drawable.utez),
+        Cancha("Cancha de Basketball", R.drawable.utez),
         Cancha("Auditorio", R.drawable.utez),
-        Cancha("Piscina", R.drawable.utez, disponible = false),
-        Cancha("Cancha volleyball", R.drawable.utez)
+        Cancha("Alberca", R.drawable.utez, disponible = false),
+        Cancha("Cancha Volleyball", R.drawable.utez)
     )
 
     // Lógica para el saludo
@@ -163,7 +163,7 @@ fun CanchaCard(cancha: Cancha) {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
                 ) {
                     Text(
-                        text = if (cancha.disponible) "Ver disponibilidad" else "Fuera de servicio",
+                        text = if (cancha.disponible) "Reservar Cancha" else "Fuera de servicio",
                         fontSize = 14.sp,
                         color = Color.White
                     )
