@@ -31,7 +31,10 @@ data class Cancha(
 )
 
 @Composable
-fun DashboardScreen(userName: String = "") {
+fun DashboardScreen(
+    userName: String = "",
+    onNavigateToProfile: () -> Unit = {}
+) {
     val canchas = listOf(
         Cancha("Cancha de Football 7", R.drawable.utez),
         Cancha("Cancha de Basketball", R.drawable.utez),
@@ -79,7 +82,7 @@ fun DashboardScreen(userName: String = "") {
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = null) },
                     selected = false,
-                    onClick = {}
+                    onClick = onNavigateToProfile
                 )
             }
         }

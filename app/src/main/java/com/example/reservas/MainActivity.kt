@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import com.example.reservas.screens.ForgotPasswordScreen
 import com.example.reservas.screens.LoginScreen
 import com.example.reservas.screens.RegisterScreen
+import com.example.reservas.screens.ProfileScreen
 import com.example.reservas.ui.theme.ReservasTheme
 
 // Definición de pantallas para navegación simple
@@ -19,6 +20,7 @@ sealed class Screen {
     object Register : Screen()
     object ForgotPassword : Screen()
     object Dashboard : Screen()
+    object Profile : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -49,7 +51,12 @@ class MainActivity : ComponentActivity() {
                                 onNavigateBack = { currentScreen = Screen.Login }
                             )
                             is Screen.Dashboard -> DashboardScreen(
-                                userName = userName
+                                userName = userName,
+                                onNavigateToProfile = { currentScreen = Screen.Profile }
+                            )
+                            is Screen.Profile -> ProfileScreen(
+                                userName = userName,
+                                onNavigateBack = { currentScreen = Screen.Dashboard }
                             )
                         }
                     }
