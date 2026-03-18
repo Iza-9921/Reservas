@@ -6,14 +6,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 data class Cancha(
     val nombre: String,
@@ -33,8 +33,12 @@ data class Cancha(
 @Composable
 fun DashboardScreen(
     userName: String = "",
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProfile: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
     val canchas = listOf(
         Cancha("Cancha de Football 7", R.drawable.utez),
         Cancha("Cancha de Basketball", R.drawable.utez),
@@ -43,77 +47,111 @@ fun DashboardScreen(
         Cancha("Cancha Volleyball", R.drawable.utez)
     )
 
-    // Lógica para el saludo
     val saludo = if (userName.isNotBlank()) "Bienvenida $userName" else "Bienvenido"
 
-    Scaffold(
-        topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color(0xFF4E7044))
-                Spacer(modifier = Modifier.weight(1f))
-                Image(
-                    painter = painterResource(id = R.drawable.utez),
-                    contentDescription = "Logo UTEZ",
-                    modifier = Modifier.height(60.dp)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Menú",
+                    modifier = Modifier.padding(16.dp),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF38663A)
                 )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-        },
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color(0xFFF0F0F0),
-                contentColor = Color(0xFF4E7044)
-            ) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
+                HorizontalDivider()
+                NavigationDrawerItem(
+                    label = { Text("Cerrar sesión", color = Color.Red) },
                     selected = false,
-                    onClick = {}
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = null, modifier = Modifier.size(35.dp)) },
-                    selected = true,
-                    onClick = {}
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    selected = false,
-                    onClick = onNavigateToProfile
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                            onLogout()
+                        }
+                    },
+                    icon = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.Red) },
+                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                 )
             }
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = saludo,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF38663A)
-            )
-            
-            Text(
-                text = "Elige tu próxima reserva",
-                fontSize = 18.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp)
+    ) {
+        Scaffold(
+            topBar = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        scope.launch {
+                            drawerState.open()
+                        }
+                    }) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color(0xFF4E7044))
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Image(
+                        painter = painterResource(id = R.drawable.utez),
+                        contentDescription = "Logo UTEZ",
+                        modifier = Modifier.height(60.dp)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            },
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Color(0xFFF0F0F0),
+                    contentColor = Color(0xFF4E7044)
+                ) {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
+                        selected = false,
+                        onClick = {}
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Home, contentDescription = null, modifier = Modifier.size(35.dp)) },
+                        selected = true,
+                        onClick = {}
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        selected = false,
+                        onClick = onNavigateToProfile
+                    )
+                }
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(canchas) { cancha ->
-                    CanchaCard(cancha)
+                Text(
+                    text = saludo,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF38663A)
+                )
+
+                Text(
+                    text = "Elige tu próxima reserva",
+                    fontSize = 18.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    items(canchas) { cancha ->
+                        CanchaCard(cancha)
+                    }
                 }
             }
         }
@@ -145,9 +183,9 @@ fun CanchaCard(cancha: Cancha) {
                     .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column(
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
@@ -157,7 +195,7 @@ fun CanchaCard(cancha: Cancha) {
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium
                 )
-                
+
                 Button(
                     onClick = { /* Acción */ },
                     modifier = Modifier.height(35.dp),

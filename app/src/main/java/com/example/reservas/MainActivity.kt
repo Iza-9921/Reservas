@@ -52,7 +52,8 @@ class MainActivity : ComponentActivity() {
                             )
                             is Screen.Dashboard -> DashboardScreen(
                                 userName = userName,
-                                onNavigateToProfile = { currentScreen = Screen.Profile }
+                                onNavigateToProfile = { currentScreen = Screen.Profile },
+                                onLogout = { currentScreen = Screen.Login }
                             )
                             is Screen.Profile -> ProfileScreen(
                                 userName = userName,
