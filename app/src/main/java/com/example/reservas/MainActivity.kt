@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import com.example.reservas.screens.ForgotPasswordScreen
 import com.example.reservas.screens.LoginScreen
 import com.example.reservas.screens.RegisterScreen
-import com.example.reservas.screens.ProfileScreen
 import com.example.reservas.ui.theme.ReservasTheme
 
 // Definición de pantallas para navegación simple
@@ -20,7 +19,7 @@ sealed class Screen {
     object Register : Screen()
     object ForgotPassword : Screen()
     object Dashboard : Screen()
-    object Profile : Screen()
+    object ActiveReservations : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -31,6 +30,9 @@ class MainActivity : ComponentActivity() {
             ReservasTheme {
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
                 var userName by remember { mutableStateOf("") }
+                
+                // Estado compartido de reservas
+                val reservasExistentes = remember { mutableStateListOf<Reserva>() }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
@@ -52,12 +54,20 @@ class MainActivity : ComponentActivity() {
                             )
                             is Screen.Dashboard -> DashboardScreen(
                                 userName = userName,
-                                onNavigateToProfile = { currentScreen = Screen.Profile },
-                                onLogout = { currentScreen = Screen.Login }
+                                reservasExistentes = reservasExistentes,
+                                onNavigateToReservations = { currentScreen = Screen.ActiveReservations },
+                                onLogout = { 
+                                    reservasExistentes.clear()
+                                    currentScreen = Screen.Login 
+                                }
                             )
-                            is Screen.Profile -> ProfileScreen(
-                                userName = userName,
-                                onNavigateBack = { currentScreen = Screen.Dashboard }
+                            is Screen.ActiveReservations -> ActiveReservationsScreen(
+                                reservasExistentes = reservasExistentes,
+                                onNavigateToDashboard = { currentScreen = Screen.Dashboard },
+                                onLogout = {
+                                    reservasExistentes.clear()
+                                    currentScreen = Screen.Login
+                                }
                             )
                         }
                     }
