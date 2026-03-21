@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,7 +33,7 @@ import java.time.format.DateTimeFormatter
 
 data class Cancha(
     val nombre: String,
-    val imagenRes: Int,
+    val imagenes: List<Int>,
     val disponible: Boolean = true
 )
 
@@ -58,11 +60,27 @@ fun DashboardScreen(
     var selectedCancha by remember { mutableStateOf<Cancha?>(null) }
 
     val canchas = listOf(
-        Cancha("Cancha de Football 7", R.drawable.utez),
-        Cancha("Cancha de Basketball", R.drawable.utez),
-        Cancha("Auditorio", R.drawable.utez),
-        Cancha("Alberca", R.drawable.utez, disponible = false),
-        Cancha("Cancha Volleyball", R.drawable.utez)
+        Cancha(
+            "Cancha de Football 7",
+            listOf(R.drawable.fut1, R.drawable.fut2, R.drawable.fut3, R.drawable.fut4)
+        ),
+        Cancha(
+            "Cancha de Basketball",
+            listOf(R.drawable.basket1, R.drawable.basket2, R.drawable.basket3, R.drawable.basket4)
+        ),
+        Cancha(
+            "Auditorio",
+            listOf(R.drawable.nave1, R.drawable.nave2, R.drawable.nave3, R.drawable.nave4)
+        ),
+        Cancha(
+            "Alberca",
+            listOf(R.drawable.pool1, R.drawable.pool2, R.drawable.pool3, R.drawable.pool4),
+            disponible = false
+        ),
+        Cancha(
+            "Cancha Volleyball",
+            listOf(R.drawable.volley1, R.drawable.volley2, R.drawable.volley3, R.drawable.volley4)
+        )
     )
 
     val saludo = if (userName.isNotBlank()) "Bienvenida $userName" else "Bienvenido"
@@ -212,7 +230,7 @@ fun CanchaCard(cancha: Cancha, onReserveClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(id = cancha.imagenRes),
+                painter = painterResource(id = cancha.imagenes[0]),
                 contentDescription = null,
                 modifier = Modifier
                     .size(90.dp)
@@ -268,6 +286,7 @@ fun ReservationDialog(
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
 
+    val pagerState = rememberPagerState(pageCount = { cancha.imagenes.size })
     val context = LocalContext.current
 
     Dialog(
@@ -295,28 +314,40 @@ fun ReservationDialog(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                Image(
-                    painter = painterResource(id = cancha.imagenRes),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-                
-                Row(
-                    modifier = Modifier.padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    repeat(5) {
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 2.dp)
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(if (it == 0) Color.Gray else Color.LightGray)
+                // Carrusel de imágenes
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    ) { page ->
+                        Image(
+                            painter = painterResource(id = cancha.imagenes[page]),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Indicadores de puntos
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        repeat(cancha.imagenes.size) { iteration ->
+                            val color = if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
+                            Box(
+                                modifier = Modifier
+                                    .padding(2.dp)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .size(8.dp)
+                            )
+                        }
                     }
                 }
 
