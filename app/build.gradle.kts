@@ -8,6 +8,12 @@ android {
     namespace = "com.example.reservas"
     compileSdk {
         version = release(36)
+
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+            isCoreLibraryDesugaringEnabled = true
+        }
     }
 
     defaultConfig {
@@ -57,6 +63,14 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material:material-icons-extended")
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 }
