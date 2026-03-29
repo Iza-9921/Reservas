@@ -12,14 +12,23 @@ import com.example.reservas.screens.ForgotPasswordScreen
 import com.example.reservas.screens.LoginScreen
 import com.example.reservas.screens.RegisterScreen
 import com.example.reservas.ui.theme.ReservasTheme
+import com.example.reservas.screens.VerifyCodeScreen
+import com.example.reservas.screens.NewPasswordScreen
+import com.example.reservas.screens.SuccessScreen
 
-// Definición de pantallas para navegación simple
+
 sealed class Screen {
     object Login : Screen()
     object Register : Screen()
     object ForgotPassword : Screen()
     object Dashboard : Screen()
     object ActiveReservations : Screen()
+
+    data class VerifyCode(val email: String) : Screen()
+
+    object NewPassword : Screen()
+
+    object Success : Screen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -30,7 +39,7 @@ class MainActivity : ComponentActivity() {
             ReservasTheme {
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
                 var userName by remember { mutableStateOf("") }
-                
+
                 // Estado compartido de reservas
                 val reservasExistentes = remember { mutableStateListOf<Reserva>() }
 
@@ -50,15 +59,18 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                             is Screen.ForgotPassword -> ForgotPasswordScreen(
+                                onSendCode = { email ->
+                                    currentScreen = Screen.VerifyCode(email)
+                                },
                                 onNavigateBack = { currentScreen = Screen.Login }
                             )
                             is Screen.Dashboard -> DashboardScreen(
                                 userName = userName,
                                 reservasExistentes = reservasExistentes,
                                 onNavigateToReservations = { currentScreen = Screen.ActiveReservations },
-                                onLogout = { 
+                                onLogout = {
                                     reservasExistentes.clear()
-                                    currentScreen = Screen.Login 
+                                    currentScreen = Screen.Login
                                 }
                             )
                             is Screen.ActiveReservations -> ActiveReservationsScreen(
@@ -68,6 +80,20 @@ class MainActivity : ComponentActivity() {
                                     reservasExistentes.clear()
                                     currentScreen = Screen.Login
                                 }
+                            )
+                            is Screen.VerifyCode -> VerifyCodeScreen(
+                                email = (currentScreen as Screen.VerifyCode).email,
+                                onVerify = {
+                                    currentScreen = Screen.NewPassword
+                                }
+                            )
+                            is Screen.NewPassword -> NewPasswordScreen(
+                                onSuccess = {
+                                    currentScreen = Screen.Success
+                                }
+                            )
+                            is Screen.Success -> SuccessScreen(
+                                onStart = { currentScreen = Screen.Login }
                             )
                         }
                     }

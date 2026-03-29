@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -12,15 +13,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import com.example.reservas.R
-
 @Composable
-fun ForgotPasswordScreen(
-    onSendCode: (String) -> Unit,
-    onNavigateBack: () -> Unit
-){
-    var email by remember { mutableStateOf("") }
-
+fun SuccessScreen(
+    onStart: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -28,7 +26,7 @@ fun ForgotPasswordScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(60.dp))
 
         Image(
             painter = painterResource(id = R.drawable.utez),
@@ -36,37 +34,20 @@ fun ForgotPasswordScreen(
             modifier = Modifier.size(150.dp)
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         Text(
-            text = "Recuperar contraseña",
-            fontSize = 26.sp,
+            text = "¡Contraseña actualizada con éxito!",
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
             color = Color(0xFF2E5A31)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Ingresa tu correo para enviarte un código",
-            textAlign = TextAlign.Center
-        )
-
         Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Correo electrónico") }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = { if (email.isNotEmpty()) onSendCode(email) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Enviar código")
+        Button(onClick = onStart) {
+            Text("Ir al inicio")
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -12,14 +13,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import com.example.reservas.R
 
 @Composable
-fun ForgotPasswordScreen(
-    onSendCode: (String) -> Unit,
-    onNavigateBack: () -> Unit
-){
-    var email by remember { mutableStateOf("") }
+fun VerifyCodeScreen(
+    email: String,
+    onVerify: (String) -> Unit
+) {
+    var code by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -39,34 +42,44 @@ fun ForgotPasswordScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "Recuperar contraseña",
-            fontSize = 26.sp,
+            text = "Verificar código",
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF2E5A31)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Ingresa tu correo para enviarte un código",
+            text = "Código enviado a $email",
             textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Correo electrónico") }
+            value = code,
+            onValueChange = { code = it },
+            label = { Text("Código") }
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { if (email.isNotEmpty()) onSendCode(email) },
+            onClick = {
+                if (code == "1234") {
+                    onVerify(code)
+                } else {
+                    error = "Código incorrecto"
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Enviar código")
+            Text("Verificar")
+        }
+
+        if (error.isNotEmpty()) {
+            Text(error, color = Color.Red)
         }
     }
 }
