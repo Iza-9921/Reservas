@@ -16,10 +16,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.reservas.model.Instalacion
+import com.example.reservas.network.RetrofitClient
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.time.*
 
-
+// Modelos locales para la UI
 data class Cancha(
     val nombre: String,
     val imagenes: List<Int>,
@@ -46,8 +51,40 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    // --- ESTADOS PARA LA API ---
+    var instalaciones by remember { mutableStateOf<List<Instalacion>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    
     var showReservationDialog by remember { mutableStateOf(false) }
     var selectedCancha by remember { mutableStateOf<Cancha?>(null) }
+
+    // --- LLAMADA A LA API ---
+    LaunchedEffect(Unit) {
+        RetrofitClient.instance.obtenerInstalaciones().enqueue(object : Callback<List<Instalacion>> {
+            override fun onResponse(call: Call<List<Instalacion>>, response: Response<List<Instalacion>>) {
+                if (response.isSuccessful) {
+                    instalaciones = response.body() ?: emptyList()
+                } else {
+                    Toast.makeText(context, "Error del servidor: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+                isLoading = false
+            }
+
+            override fun onFailure(call: Call<List<Instalacion>>, t: Throwable) {
+                Toast.makeText(context, "Error de red: ${t.message}", Toast.LENGTH_SHORT).show()
+                isLoading = false
+            }
+        })
+    }
+
+    // --- MAPEO DE DATOS API -> UI ---
+    val canchas = instalaciones.map { inst ->
+        Cancha(
+            nombre = inst.nombre,
+            imagenes = obtenerImagenesPorTipo(inst.nombre),
+            disponible = inst.estado.equals("disponible", ignoreCase = true)
+        )
+    }
 
     val saludo = "Bienvenido, $userName"
 
@@ -149,15 +186,20 @@ fun DashboardScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
-                    items(getCanchas()) { cancha ->
-                        CanchaCard(cancha) {
-                            if (cancha.disponible) {
-                                selectedCancha = cancha
-                                showReservationDialog = true
-                            } else {
-                                Toast.makeText(context, "No disponible", Toast.LENGTH_SHORT).show()
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color(0xFF38663A))
+                    }
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(canchas) { cancha ->
+                            CanchaCard(cancha) {
+                                if (cancha.disponible) {
+                                    selectedCancha = cancha
+                                    showReservationDialog = true
+                                } else {
+                                    Toast.makeText(context, "No disponible", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
                     }
@@ -181,15 +223,22 @@ fun DashboardScreen(
     }
 }
 
-fun getCanchas(): List<Cancha> {
-    return listOf(
-        Cancha("Football 7", listOf(R.drawable.fut1, R.drawable.fut2)),
-        Cancha("Basketball", listOf(R.drawable.basket1, R.drawable.basket2)),
-        Cancha("Auditorio", listOf(R.drawable.nave1, R.drawable.nave2)),
-        Cancha("Alberca", listOf(R.drawable.pool1), disponible = false),
-        Cancha("Volleyball", listOf(R.drawable.volley1, R.drawable.volley2))
-    )
+// Función auxiliar para asignar imágenes locales según el nombre de la API
+fun obtenerImagenesPorTipo(nombre: String): List<Int> {
+    return when {
+        nombre.contains("Football", true) || nombre.contains("Futbol", true) -> 
+            listOf(R.drawable.fut1, R.drawable.fut2)
+        nombre.contains("Basketball", true) || nombre.contains("Basquetbol", true) -> 
+            listOf(R.drawable.basket1, R.drawable.basket2)
+        nombre.contains("Auditorio", true) -> 
+            listOf(R.drawable.nave1, R.drawable.nave2)
+        nombre.contains("Alberca", true) -> 
+            listOf(R.drawable.pool1)
+        else -> 
+            listOf(R.drawable.volley1, R.drawable.volley2)
+    }
 }
+
 @Composable
 fun CanchaCard(
     cancha: Cancha,
