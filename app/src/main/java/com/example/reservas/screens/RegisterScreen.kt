@@ -1,5 +1,6 @@
 package com.example.reservas.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -11,34 +12,34 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.reservas.viewmodel.AuthViewModel
 
 @Composable
 fun RegisterScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: () -> Unit = {},
-    onRegisterSuccess: (String) -> Unit = {}
+    onRegisterSuccess: (String) -> Unit = {},
+    viewModel: AuthViewModel = viewModel()
 ) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val isLoading by viewModel.isLoading
+    val errorMessage by viewModel.errorMessage
 
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Campos incompletos") },
-            text = { Text("Por favor, llena todos los campos para poder continuar.") },
-            confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Entendido")
-                }
-            }
-        )
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
     }
 
     Column(
@@ -63,7 +64,8 @@ fun RegisterScreen(
             label = { Text("Nombre completo") },
             leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
-            singleLine = true
+            singleLine = true,
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -75,7 +77,8 @@ fun RegisterScreen(
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true
+            singleLine = true,
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -88,33 +91,41 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true
+            singleLine = true,
+            enabled = !isLoading
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = {
-                if (fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
-                    onRegisterSuccess(fullName)
-                } else {
-                    showDialog = true
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF15B93F),
-                contentColor = Color.White
-            )
-        ) {
-            Text("Registrarse")
+        if (isLoading) {
+            CircularProgressIndicator(color = Color(0xFF15B93F))
+        } else {
+            Button(
+                onClick = {
+                    if (fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
+                        viewModel.register(fullName, email, password) {
+                            Toast.makeText(context, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                            onRegisterSuccess(fullName)
+                        }
+                    } else {
+                        Toast.makeText(context, "Por favor llena todos los campos", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF15B93F),
+                    contentColor = Color.White
+                )
+            ) {
+                Text("Registrarse")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = onNavigateBack) {
+        TextButton(onClick = onNavigateBack, enabled = !isLoading) {
             Text("Ya tengo una cuenta. Volver")
         }
     }

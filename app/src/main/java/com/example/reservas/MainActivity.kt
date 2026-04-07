@@ -13,7 +13,6 @@ import com.example.reservas.screens.LoginScreen
 import com.example.reservas.screens.RegisterScreen
 import com.example.reservas.ui.theme.ReservasTheme
 
-// Definición de pantallas para navegación simple
 sealed class Screen {
     object Login : Screen()
     object Register : Screen()
@@ -30,8 +29,8 @@ class MainActivity : ComponentActivity() {
             ReservasTheme {
                 var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
                 var userName by remember { mutableStateOf("") }
+                var userId by remember { mutableStateOf(0) }
                 
-                // Estado compartido de reservas
                 val reservasExistentes = remember { mutableStateListOf<Reserva>() }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -40,12 +39,15 @@ class MainActivity : ComponentActivity() {
                             is Screen.Login -> LoginScreen(
                                 onNavigateToRegister = { currentScreen = Screen.Register },
                                 onNavigateToForgotPassword = { currentScreen = Screen.ForgotPassword },
-                                onNavigateToDashboard = { currentScreen = Screen.Dashboard }
+                                onNavigateToDashboard = { name -> 
+                                    userName = name
+                                    // Aquí podrías guardar el ID real que venga de la API
+                                    currentScreen = Screen.Dashboard 
+                                }
                             )
                             is Screen.Register -> RegisterScreen(
                                 onNavigateBack = { currentScreen = Screen.Login },
                                 onRegisterSuccess = { name ->
-                                    userName = name
                                     currentScreen = Screen.Login
                                 }
                             )
@@ -54,6 +56,7 @@ class MainActivity : ComponentActivity() {
                             )
                             is Screen.Dashboard -> DashboardScreen(
                                 userName = userName,
+                                userId = userId,
                                 reservasExistentes = reservasExistentes,
                                 onNavigateToReservations = { currentScreen = Screen.ActiveReservations },
                                 onLogout = { 
